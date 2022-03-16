@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        div{
+            background-color: #05336b;
+            height: 670px;
+        }
+        #city{
+            margin-left: 30%;
+            margin-top: 5%;
+            width: 400px;
+            height: 40px;
+            text-align: center;
+        }
+        #search{
+            background-color: teal;
+            color: white;
+            width: 100px;
+            height: 40px;
+        }
+        #temp{
+            font-size: 70px;
+            color: white;
+        }
+     #id{
+         margin-left: 10%;
+         color: white;
+     }
+     .mapouter{
+         margin-top: -40%;
+         margin-left: 60%;
+         width: 500px;
+         height: 300px;
+     }
+     #main{
+         margin-top: 200px;
+         text-align: center;
+         color: white;
+     }
+     #weekdays{
+         margin-top: -500px;
+         display: flex;
+         color: white;
+     }
+     img{
+         width: 200px;
+     }
+     #xyz{
+         color: white;
+         cursor: pointer;
+         border-radius: 20px;
+         background-color: teal;
+
+     }
+      #maxx{
+          margin-top: -400px;
+      }
+    </style>
+</head>
+<body>
+    <div>
+    <input id="city" type="text" placeholder="Enter the city name">
+    <button id="search" onclick="search()">search</button>
+    <button onclick="data7()" id="xyz">Full Week Data</button>
+    <div id="data"></div>
+
+    <div class="mapouter"><div class="gmap_canvas">
+        <iframe width="600" 
+        height="500" 
+         id="gmap_canvas" 
+         frameborder="0"
+          scrolling="no"
+           marginheight="0" 
+           marginwidth="0">
+        </iframe>
+        <a href="https://123movies-to.org"></a><br><a href="https://www.embedgooglemap.net">embedgooglemap.net</a></div></div>
+        <div id="main"></div>
+        <div id="weekdays"></div>
+    </div>
+</body>
+</html>
+<script>
+    let lat;
+    let log;
+    let data_div = document.getElementById("data")
+    async function search(){
+        let city = document.getElementById("city").value
+        document.querySelector("iframe").src = `https://maps.google.com/maps?q=${city}&t=&z=13&ie=UTF8&iwloc=&output=embed`
+        try{
+        
+        let response = await fetch(
+            `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=dc4243c71c3077a58e8bcc66f3983468&units=metric`
+        );
+        let data = await response.json()
+        log = data.coord.lon
+        //console.log('log:', log)
+        lat = data.coord.lat
+        //console.log('lat:', lat)
+        showweather(data)
+        console.log("data:", data)
+    
+    }
+    //°
+
+    catch(err){
+       console.log("err:",err) 
+    }
+}
+function showweather(weather){
+    data_div.innerHTML = null;
+    var divv = document.createElement("div")
+    divv.id = "id"
+  let temp = document.createElement("h1")
+  temp.innerText = `${weather.main.temp}°`
+  temp.id = "temp"
+  let clouds = document.createElement("h2")
+  clouds.innerText = `Clouds - ${weather.clouds.all}`;
+  let humidity = document.createElement("p")
+  humidity.innerText = `Humidity - ${weather.main.humidity}`;
+  let min = document.createElement("h4")
+  min.innerText = `Min Temperature - ${weather.main.temp_min}`
+  let max = document.createElement("h4")
+  max.innerText = `Max Temperature -${weather.main.temp_max}`
+  let sunrise = document.createElement("h2")
+  sunrise.textContent = `Sun Rise- ${weather.sys.sunrise}`
+  let sunset = document.createElement("h2")
+  sunset.textContent = `Sun set- ${weather.sys.sunset}`
+  divv.append(temp,sunrise,sunset,clouds,min,max,humidity)
+  data_div.append(divv)
+};
+async function data7(){
+    try{
+        let res = await fetch(`https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${log}&appid=efcff216c2c4fc7f23fa42405cbe6cf3&units=metric`)
+        let weeks = await res.json() 
+        appenddata(weeks.daily)  
+        console.log('weeks:', weeks.daily)
+    }
+    catch(err){
+        console.log('err:', err)
+
+    }
+}
+function appenddata(arr){
+    
+       document.querySelector("#weekdays").innerHTML = ""
+       document.querySelector("#main").innerHTML = ""
+       let s = document.createElement("h1")
+       s.textContent = "Weather data of a Week"
+       document.querySelector("#main").append(s)
+    arr.forEach(function(el){
+           var ab = Number(el.temp.max)
+           var max = document.createElement("h3")
+           max.textContent = el.temp.max + "°"
+           let min = document.createElement("h3")
+           min.textContent = el.temp.min + "°"
+           var img = document.createElement("img")
+           //img.setAttribute("id","img5")
+           if (ab > 28) {
+
+
+      img.src = "https://cdn-icons-png.flaticon.com/128/2698/2698194.png"
+      }
+      else if (ab > 27 && ab <= 28) {
+
+      img.src = "https://cdn-icons-png.flaticon.com/128/3217/3217172.png"
+     }
+     else if (ab < 27) {
+
+       img.src = "https://cdn-icons-png.flaticon.com/512/1146/1146869.png"
+      }
+      var div2 = document.createElement('div')
+      var div_mx = document.createElement('div')
+      var div1 = document.createElement('div')
+      div2.append(img)
+      div_mx.append(max,min)
+      div_mx.id = "maxx"
+      div1.append(div2,div_mx)
+      document.getElementById("weekdays").append(div1)
+      })
+}
+</script>
